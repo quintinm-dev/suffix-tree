@@ -50,11 +50,14 @@ class SuffixTree:
         self.root = Node.create_root()
         self._reset_active_point()
 
+        self.first_leaf = None
+
         self.current_end = 0
 
-    def _reset_active_point(self) -> None:
+    # Resets active point to given node, using root if none given
+    def _reset_active_point(self, node: "Node" = None) -> None:
         # These three define the end of the current suffix
-        self.active_node = self.root
+        self.active_node = node or self.root
         self.active_edge = None
         self.active_length = 0
 
@@ -99,19 +102,23 @@ class SuffixTree:
 
     # Extension j ensures suffix s[j..i+1] is in the tree
     def _extend(self, j: int, i: int) -> None:
-        print(f"ensuring s[{j}, {i+1}] is in tree")
-        self._walk(j, i + 1)
+        print(f"ensuring s[{j}, {i + 1}] is in tree")
+
+        if j == 0:
+            self._reset_active_point(self.first_leaf)
+        else:
+            self._walk(j, i + 1, self.root)
+
         print(
             f"postwalk an: {self.active_node.id}, "
             f"ae: {self.active_edge}, al: {self.active_length}"
         )
 
         self._rule_extension(i)
-        # self.print()
 
-    # Walks from root over s[start, end) which must already be in the tree
-    def _walk(self, start: int, end: int) -> None:
-        self._reset_active_point()
+    # Walks from start_node over s[start, end) which must already be in the tree
+    def _walk(self, start: int, end: int, start_node: "Node") -> None:
+        self._reset_active_point(start_node)
 
         if start == end:
             return
@@ -152,7 +159,12 @@ class SuffixTree:
             self.active_edge is None
             and self._find_edge(self.active_node, c) is None
         ):
-            self.active_node.children[i + 1] = Node(start=i + 1)
+            child = Node(start=i + 1)
+            self.active_node.children[i + 1] = child
+
+            if not self.first_leaf:
+                self.first_leaf = child
+
             print("Rule 2")
             return None
         elif (
@@ -184,6 +196,7 @@ class SuffixTree:
         return end - node.start
 
     def _find_edge(self, node: "Node", char: str) -> bool:
+        # Could hold chars in a dict but this is already O(1)
         for i in node.children.keys():
             if char == self.word[i]:
                 return i
@@ -231,6 +244,8 @@ class SuffixTree:
         nx.draw_networkx_edge_labels(
             G, pos, font_size=16, edge_labels=nx.get_edge_attributes(G, "label")
         )
+
+        print(f"first leaf: {self.first_leaf and self.first_leaf.id}")
 
         plt.axis("off")
         plt.show()
