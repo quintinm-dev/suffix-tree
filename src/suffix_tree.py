@@ -18,6 +18,10 @@ class Node:
 
         return root
 
+    @classmethod
+    def reset_id(cls) -> None:
+        cls.next_id = 0
+
     def __init__(self, start: int = None) -> None:
         # Key is a starting index of edge into a child node
         self.children = {}
@@ -42,6 +46,7 @@ class SuffixTree:
     def __init__(self, word: str) -> None:
         self.word = word
 
+        Node.reset_id()
         self.root = Node.create_root()
         self._reset_active_point()
 
