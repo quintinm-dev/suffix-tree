@@ -65,10 +65,11 @@ class SuffixTreeTest(unittest.TestCase):
 
     def test_dynamic_short(self):
         word_length = 8
-        iterations = 500
+        iterations = 4000
+        alphabet = "abcdefghij"
 
         for _ in range(iterations):
-            word = self._random_word(word_length)
+            word = self._random_word(word_length, alphabet)
             tree = self._setup_tree(word)
             self._assert_all_suffixes_present(tree, word)
             # TODO: test more queries that should return False
@@ -80,6 +81,20 @@ class SuffixTreeTest(unittest.TestCase):
 
         for _ in range(iterations):
             word = self._random_word(word_length, alphabet)
+            print(word)
+            tree = self._setup_tree(word)
+            self._assert_all_suffixes_present(tree, word)
+
+    def test_regression_stale_parent(self):
+        # Forgot to make internal node the parent of the previous child
+        words = [
+            "sbgbbbgl",
+            "fdhfffdi",
+            "cbfbbbffjc",
+            "icjbfidefieicbjhdhjijjjhefafjcjhiaiiidic",
+            "degjbgbideechjjahdcadjefeehdjfdjfibjjjdg",
+        ]
+        for word in words:
             tree = self._setup_tree(word)
             self._assert_all_suffixes_present(tree, word)
 
