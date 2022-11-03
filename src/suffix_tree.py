@@ -67,6 +67,7 @@ class SuffixTree:
         self.first_leaf = None
 
         self.current_end = 0
+        self.j_i = -1
 
     # Resets active point to given node, using root if none given
     def _reset_active_point(self, node: Node = None) -> None:
@@ -78,7 +79,6 @@ class SuffixTree:
     def build(self) -> None:
         for i in range(len(self.word)):
             self._phase(i - 1)
-            self.current_end += 1
             print(f"done phase {i + 1}\n")
             self.print()
 
@@ -115,20 +115,66 @@ class SuffixTree:
     def _phase(self, i: int) -> None:
         self.prev_internal_node = None
 
-        for j in range(0, i + 2):
-            self._extend(j, i)
+        # First extension of phase i done in constant time.
+        # Assumes active point is at the END of the last explicit extension
+        # done in the previous phase.
+        # Where explicit extension is the last extension where the end was
+        # explicitly found, not the last rule 2 extension.
+        print(
+            f"phase start an: {self.active_node.id}, "
+            f"ae: {self.active_edge}, al: {self.active_length}"
+        )
+
+        print(f"initial ensuring s[{self.j_i + 1}, {i + 1}] is in tree")
+
+        rule_used = self._rule_extension(i)
+        self._update_prev_internal_node(rule_used)
+        self.print()
+
+        if rule_used != "3":
+            for j in range(self.j_i + 2, i + 2):
+                rule_used = self._extend(j, i)
+                if rule_used == "3":
+                    self.j_i = j - 1
+                    break
+
+            if rule_used != "3":
+                self.j_i = i
+
+        # Have to do this prior to moving active point to s[i+1]
+        # so that leaf edge lengths are correct
+        self.current_end += 1
+
+        # Make sure active point is at end, i.e. s[i+1] not s[i]
+        if rule_used in ("2a", "2b"):
+            self.active_node = self.active_node.children[i + 1]
+        elif rule_used == "3":
+            self.active_length += 1
+
+            if self.active_length == 1:
+                self.active_edge = self._find_edge(
+                    self.active_node, self.word[i + 1]
+                )
+
+            child = self.active_node.children[self.active_edge]
+            if self.active_length == self._node_length(child):
+                self._reset_active_point(child)
+
+    # old extension logic:
+    # if j == 0:
+    #     self._reset_active_point(self.first_leaf)
+    #     rule_used = self._rule_extension(i)
+    # else:
 
     # Extension j ensures suffix s[j..i+1] is in the tree
     def _extend(self, j: int, i: int) -> None:
         print(f"ensuring s[{j}, {i + 1}] is in tree")
 
-        if j == 0:
-            self._reset_active_point(self.first_leaf)
-            self._rule_extension(i)
-            self.print()
-        else:
-            self._single_extension_algorithm(j, i)
-            self.print()
+        rule_used = self._single_extension_algorithm(j, i)
+
+        self.print()
+
+        return rule_used
 
     # Walks from start_node over s[start, end) which must already be in the tree
     def _walk(self, start: int, end: int, start_node: Node) -> None:
@@ -160,6 +206,7 @@ class SuffixTree:
 
     # Handles extending the current suffix with s[i+1]
     # Returns rule used, one of '1', '2a' (no split), '2b' (split), '3'
+    # Moves the active point to the internal node if there's a split
     def _rule_extension(self, i: int) -> str:
         # Rule 1: ends at leaf node, extend path
         if self.active_length == 0 and self.active_node.is_leaf():
@@ -214,7 +261,14 @@ class SuffixTree:
         print("Rule 3")
         return "3"
 
-    def _single_extension_algorithm(self, j: int, i: int) -> None:
+    def _update_prev_internal_node(self, rule_used: str) -> None:
+        if rule_used == "2b":
+            self.prev_internal_node = self.active_node
+        else:
+            self.prev_internal_node = None
+
+    # Returns whatever _rule_extension(i) returns
+    def _single_extension_algorithm(self, j: int, i: int) -> str:
         print(
             f"prewalk an: {self.active_node.id}, "
             f"ae: {self.active_edge}, al: {self.active_length}"
@@ -261,16 +315,15 @@ class SuffixTree:
         prev_internal_node = self.prev_internal_node
 
         rule_used = self._rule_extension(i)
-        if rule_used == "2b":
-            self.prev_internal_node = self.active_node
-        else:
-            self.prev_internal_node = None
+        self._update_prev_internal_node(rule_used)
 
         # Suffix link update has to happen after extension,
         # as node for end of s[j..i] does not necessarily exist until
         # we insert s[i+1], i.e. when it's a case 2 split
         if prev_internal_node:
             prev_internal_node.suffix_link = self.active_node
+
+        return rule_used
 
     def _node_length(self, node: Node) -> int:
         end = self.current_end if node.is_leaf() else node.end
