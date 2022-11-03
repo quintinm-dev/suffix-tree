@@ -351,11 +351,11 @@ class SuffixTree:
             curr = todo.pop()
 
             if curr.suffix_link:
-                G.add_edge(curr.id, curr.suffix_link.id, weight=1, color="m")
+                G.add_edge(curr.id, curr.suffix_link.id, is_suffix=True)
 
             for child in curr.children.values():
                 substr = self.word[child.start : child.end or self.current_end]
-                G.add_edge(curr.id, child.id, label=substr, weight=2, color="b")
+                G.add_edge(curr.id, child.id, label=substr, is_suffix=False)
 
                 todo.append(child)
 
@@ -365,7 +365,16 @@ class SuffixTree:
         # Tree layout
         pos = graphviz_layout(G, prog="dot")
 
+        is_edge_suffix = nx.get_edge_attributes(G, "is_suffix")
+        suffix_links, edges = [], []
+        for e in G.edges():
+            if is_edge_suffix[e]:
+                suffix_links.append(e)
+            else:
+                edges.append(e)
+
         plt.figure()
+        # Draw nodes + edges
         nx.draw(
             G,
             pos,
@@ -373,10 +382,25 @@ class SuffixTree:
             node_size=1000,
             node_color="pink",
             alpha=0.9,
-            edge_color=nx.get_edge_attributes(G, "color").values(),
-            width=list(nx.get_edge_attributes(G, "weight").values()),
+            edgelist=edges,
+            edge_color="b",
+            width=2,
             with_labels=True,
             arrows=True,
+            arrowsize=20,
+        )
+        # Draw suffix links
+        nx.draw_networkx_edges(
+            G,
+            pos,
+            node_size=1000,
+            edgelist=suffix_links,
+            edge_color="m",
+            width=1,
+            style="dashed",
+            connectionstyle="arc3, rad = 0.1",
+            arrows=True,
+            arrowsize=20,
         )
         nx.draw_networkx_edge_labels(
             G, pos, font_size=16, edge_labels=nx.get_edge_attributes(G, "label")
