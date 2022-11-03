@@ -53,6 +53,11 @@ class SuffixTree:
     """Compressed suffix tree."""
 
     def __init__(self, word: str) -> None:
+        global printing_disabled
+        if printing_disabled:
+            disable_printing()
+
+        print(word)
         self.word = word
 
         Node.reset_id()
@@ -62,11 +67,6 @@ class SuffixTree:
         self.first_leaf = None
 
         self.current_end = 0
-        print(word)
-
-        global printing_disabled
-        if printing_disabled:
-            disable_printing()
 
     # Resets active point to given node, using root if none given
     def _reset_active_point(self, node: Node = None) -> None:

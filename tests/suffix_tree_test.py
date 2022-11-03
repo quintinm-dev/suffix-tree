@@ -81,7 +81,6 @@ class SuffixTreeTest(unittest.TestCase):
 
         for _ in range(iterations):
             word = self._random_word(word_length, alphabet)
-            print(word)
             tree = self._setup_tree(word)
             self._assert_all_suffixes_present(tree, word)
 
@@ -95,6 +94,16 @@ class SuffixTreeTest(unittest.TestCase):
             "degjbgbideechjjahdcadjefeehdjfdjfibjjjdg",
         ]
         for word in words:
+            tree = self._setup_tree(word)
+            self._assert_all_suffixes_present(tree, word)
+
+    @unittest.skip("takes five minutes to run")
+    def test_dynamic_very_long(self):
+        word_length = pow(10, 4)
+        iterations = 1
+
+        for _ in range(iterations):
+            word = self._random_word(word_length)
             tree = self._setup_tree(word)
             self._assert_all_suffixes_present(tree, word)
 
