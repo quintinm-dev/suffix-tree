@@ -159,8 +159,8 @@ class SuffixTree:
                 break
 
     # Handles extending the current suffix with s[i+1]
-    # Returns the internal node if rule 2 applied and a split happened
-    def _rule_extension(self, i: int) -> None | Node:
+    # Returns rule used, one of '1', '2a' (no split), '2b' (split), '3'
+    def _rule_extension(self, i: int) -> str:
         # Rule 1: ends at leaf node, extend path
         if self.active_length == 0 and self.active_node.is_leaf():
             print("Rule 1")
@@ -168,7 +168,7 @@ class SuffixTree:
             # Technically this leaves the active point at s[i+1] instead of s[i]
             # but I think that's OK, as leaves should never have links,
             # and the parent of this will always have a link if it's internal
-            return None
+            return "1"
 
         c = self.word[i + 1]
 
@@ -183,7 +183,7 @@ class SuffixTree:
                 self.first_leaf = child
 
             print("Rule 2")
-            return None
+            return "2a"
         elif (
             self.active_edge is not None
             and c != self.word[self.active_edge + self.active_length]
@@ -208,11 +208,11 @@ class SuffixTree:
             self._reset_active_point(internal_node)
 
             print("Rule 2 split")
-            return internal_node
+            return "2b"
 
         # Rule 3: implicit suffix, already in tree
         print("Rule 3")
-        return None
+        return "3"
 
     def _single_extension_algorithm(self, j: int, i: int) -> None:
         print(
@@ -260,19 +260,17 @@ class SuffixTree:
 
         prev_internal_node = self.prev_internal_node
 
-        maybe_internal_node = self._rule_extension(i)
-        self.prev_internal_node = maybe_internal_node
+        rule_used = self._rule_extension(i)
+        if rule_used == "2b":
+            self.prev_internal_node = self.active_node
+        else:
+            self.prev_internal_node = None
 
         # Suffix link update has to happen after extension,
         # as node for end of s[j..i] does not necessarily exist until
         # we insert s[i+1], i.e. when it's a case 2 split
         if prev_internal_node:
-            prev_internal_node.suffix_link = (
-                maybe_internal_node or self.active_node
-            )
-
-            if not maybe_internal_node and self.active_length > 0:
-                raise AssertionError("wat")
+            prev_internal_node.suffix_link = self.active_node
 
     def _node_length(self, node: Node) -> int:
         end = self.current_end if node.is_leaf() else node.end
