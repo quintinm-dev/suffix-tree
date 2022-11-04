@@ -109,6 +109,7 @@ class SuffixTreeTest(unittest.TestCase):
     def test_regression_wrong_leaf_edge_length(self):
         # Need to make sure leaf edge lengths are correct
         # So that the active point is moved to s[i+1] correctly after rule 3
+        # Instead of moving to s[i+2]
         words = ["dafceeai"]
         for word in words:
             tree = self._setup_tree(word)
