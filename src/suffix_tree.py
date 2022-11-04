@@ -3,8 +3,9 @@
 from __future__ import annotations
 import sys
 import networkx as nx
-from networkx.drawing.nx_pydot import graphviz_layout
 import matplotlib.pyplot as plt
+from networkx.drawing.nx_pydot import graphviz_layout
+import pydot  # for above
 
 
 class Node:
@@ -82,7 +83,7 @@ class SuffixTree:
             print(f"done phase {i + 1}\n")
             self.print()
 
-    # TODO: use termination char.
+    # TODO: add option to check for termination
     # Currently returns true for prefixes of suffixes.
     def find(self, query: str) -> bool:
         curr_node = self.root
@@ -159,12 +160,6 @@ class SuffixTree:
             child = self.active_node.children[self.active_edge]
             if self.active_length == self._node_length(child):
                 self._reset_active_point(child)
-
-    # old extension logic:
-    # if j == 0:
-    #     self._reset_active_point(self.first_leaf)
-    #     rule_used = self._rule_extension(i)
-    # else:
 
     # Extension j ensures suffix s[j..i+1] is in the tree
     def _extend(self, j: int, i: int) -> None:
