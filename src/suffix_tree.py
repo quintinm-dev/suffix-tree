@@ -134,7 +134,7 @@ class SuffixTree:
 
         if rule_used != "3":
             for j in range(self.j_i + 2, i + 2):
-                rule_used = self._extend(j, i)
+                rule_used = self._single_extension_algorithm(j, i)
                 if rule_used == "3":
                     self.j_i = j - 1
                     break
@@ -160,16 +160,6 @@ class SuffixTree:
             child = self.active_node.children[self.active_edge]
             if self.active_length == self._node_length(child):
                 self._reset_active_point(child)
-
-    # Extension j ensures suffix s[j..i+1] is in the tree
-    def _extend(self, j: int, i: int) -> None:
-        print(f"ensuring s[{j}, {i + 1}] is in tree")
-
-        rule_used = self._single_extension_algorithm(j, i)
-
-        self.print()
-
-        return rule_used
 
     # Walks from start_node over s[start, end) which must already be in the tree
     def _walk(self, start: int, end: int, start_node: Node) -> None:
@@ -264,6 +254,7 @@ class SuffixTree:
 
     # Returns whatever _rule_extension(i) returns
     def _single_extension_algorithm(self, j: int, i: int) -> str:
+        print(f"ensuring s[{j}, {i + 1}] is in tree")
         print(
             f"prewalk an: {self.active_node.id}, "
             f"ae: {self.active_edge}, al: {self.active_length}"
@@ -317,6 +308,8 @@ class SuffixTree:
         # we insert s[i+1], i.e. when it's a case 2 split
         if prev_internal_node:
             prev_internal_node.suffix_link = self.active_node
+
+        self.print()
 
         return rule_used
 
