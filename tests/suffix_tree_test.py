@@ -97,13 +97,21 @@ class SuffixTreeTest(unittest.TestCase):
             tree = self._setup_tree(word)
             self._assert_all_suffixes_present(tree, word)
 
-    @unittest.skip("takes five minutes to run")
     def test_dynamic_very_long(self):
         word_length = pow(10, 4)
         iterations = 1
 
         for _ in range(iterations):
             word = self._random_word(word_length)
+            tree = self._setup_tree(word)
+            self._assert_all_suffixes_present(tree, word)
+
+    def test_regression_wrong_leaf_edge_length(self):
+        # Need to make sure leaf edge lengths are correct
+        # So that the active point is moved to s[i+1] correctly after rule 3
+        # Instead of moving to s[i+2]
+        words = ["dafceeai"]
+        for word in words:
             tree = self._setup_tree(word)
             self._assert_all_suffixes_present(tree, word)
 
