@@ -47,10 +47,10 @@ In addition to Gusfield's book and the StackOverflow post, I found these resourc
 - The SPA requires you to move the active point at the end of a phase
     - In both the O(n^2) and O(n) overall algorithms, the first extension of a phase is done in constant time without any edge walking
      to find the insertion point.
-    - Within a phase, the SEA assumes that at the beginning of an extension, the active point is unchanged from where the last extension took place. That is, extension j of phase i+1 which ensures s[j..i+1] is in the tree assumes the active point is at the end of s[j-1..i].
-    - Across phases, the first explicit extension in the SPA assumes at starting that the active point is at the end of the last explicit extension of the previous phase. That is, if phase i+1 has last explicit extension k ensuring s[k..i+1], then phase i+2 assumes the active point is at the end of s[k..i+1], not s[k..i].
+    - Within a phase, the SEA assumes that at the beginning of an extension the active point is unchanged from where the previous extension took place. That is, after extension j-1 of phase i+1 which ensures s[j-1..i+1], extension j assumes the active point is at the end of s[j-1..i].
+    - Across phases, the SPA requires that for the first explicit extension the active point is at the end of the last explicit extension of the previous phase. That is, if phase i+1 has last explicit extension k ensuring s[k..i+1], then the first extension of phase i+2 assumes the active point is at the end of s[k..i+1], not s[k..i].
     - In contrast, the original O(n^2) version using just the SEA has an easier cross-phase adjustment of the active point, which is always set to the first leaf.
-- If none of the extensions k..i in a phase are rule 3, it's easier to start the next phase with extension i, instead of extension i+1. The repeated explicit extension of extension i isn't necessary, but it lets you handle this case the same as if rule 3 had applied.
+- If none of the extensions k..i in a phase are rule 3, it's easier to start the next phase with extension i, instead of extension i+1. The repeated explicit extension of extension i isn't necessary, but it lets you treat this case identically to if rule 3 had applied.
 ## Misc commands 
 ### Run tests
 ```bash
